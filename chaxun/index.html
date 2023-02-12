@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/style.css" />
+    <title>教学辅助功能</title>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <p style='margin:auto;text-align:center'>教学辅助功能</p>
+
+    <form action="/stu" method="post" style='margin:auto;text-align:center'>
+        <p>输入学生姓名: <input type="text" class = "input" name="stuid">
+        <input class="button" type="submit" value="查看出勤率">
+        </p>
+    </form>
+
+    <form action="/cls" method="post" style='margin:auto;text-align:center'>
+        <p>输入班级id: <input type="text" class = "input" name="clsid">
+        <input class="button" type="submit" value="查看出勤率">
+        </p>
+    </form>
+
+    <form action="/tea" method="post" style='margin:auto;text-align:center'>
+        <p>输入教师id: <input type="text" class = "input" name="teaid">
+        <input class="button" type="submit" value="查看评教得分">
+        </p>
+    </form>
+
+    <form action="/score" method="post" style='margin:auto;text-align:center'>
+        <p>输入教师id: <input type="text" class = "input" name="targetid">
+        输入分数: <input type="text" class = "input" name="score">
+        <input class="button" type="submit" value="提交评教">
+        </p>
+    </form>
+
+
+</body>
+
+</html>

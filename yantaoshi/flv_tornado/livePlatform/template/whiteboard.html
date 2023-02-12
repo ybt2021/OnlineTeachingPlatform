@@ -1,0 +1,196 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>whiteboard</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <style type="text/css">
+        #container {
+            position: relative;
+        }
+
+        #imageView {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body style="background-color: rgb(255,255,255)">
+    <div id="container">
+        <canvas id="imageView" width="1200" height="700" style="display: block;margin:0 auto"></canvas>
+        <div style="margin:0 auto;margin-top: 20px;margin-left: 33%;">
+            选择颜色&nbsp;
+            <select onchange="change_color()" id="colors" style="width:100px">
+                <option value="black">黑色</option>
+                <option value="blue">蓝色</option>
+                <option value="red">红色</option>
+                <option value="green">绿色</option>
+                <option value="white">橡皮</option>
+            </select>
+            <button id="btn_clear" class="button" style="margin:0 auto;margin-top: 20px;margin-left: 100px;">清空画板</button>
+        </div>
+    </div>
+
+    <script src="http://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.2.min.js"></script>
+    <script type="text/javascript">
+        var canvas;
+        var context;
+        var tool;
+        var websocket = new WebSocket("ws://127.0.0.1:8888/whiteboard");
+        var cur_color = "black";
+        var color_cache = "black";
+
+        //收到广播后按指定颜色生成同步笔画
+        //画完后切换回原来的颜色
+        websocket.onmessage = function (e) {
+            ev = JSON.parse(e.data);
+            var func = tool[ev.type];
+            if (func) {
+                color_cache = cur_color;
+                cur_color = ev.cur_color;
+                func(ev);
+                cur_color = color_cache;
+            }
+            else {
+                var w = canvas.width;
+                canvas.width = w;
+                console.log("清空白板");
+            }
+        }
+
+        //下拉框选择颜色
+        const colors = document.getElementById("colors");
+        function change_color() {
+            var c = $('select option:selected').val();
+            //var c = colors.val();
+            if (c == "black") {
+                cur_color = "black";
+            }
+            else if (c == "blue") {
+                cur_color = "blue";
+            }
+            else if (c == "red") {
+                cur_color = "red";
+            }
+            else if (c == "green") {
+                cur_color = "green";
+            }
+            else if (c == "white") {
+                cur_color = "white";
+            }
+        }
+
+        //清除整个白板
+        const btn_clear = document.getElementById("btn_clear");
+        btn_clear.addEventListener("click", clearCanvas);
+        function clearCanvas() {
+            //清除白板
+            var w = canvas.width;
+            canvas.width = w;
+            //向后台发送清除白板消息
+            var clear_msg = {
+                type: "clear"
+            }
+            clear_msg = eval(clear_msg);
+            clear_msg_str = JSON.stringify(clear_msg);
+            websocket.send(clear_msg_str);
+        }
+
+        //加载页面时init初始化
+        if (window.addEventListener) {
+            window.addEventListener('load', init(), false);
+        }
+        function init() {
+            //find the canvas element.必须找到能加载context的canvas           
+            canvas = document.getElementById('imageView');
+            //获取画布
+            if (!canvas) {
+                return;
+            }
+            if (!canvas.getContext) {
+                return;
+            }
+            //获取context
+            context = canvas.getContext('2d');
+            if (!context) {
+                return;
+            }
+            //获取画笔
+            tool = new tool_pencil();
+            //attach the mousedown, mousemove and mouseup event listeners.
+            canvas.addEventListener('mousedown', ev_canvas, false);
+            canvas.addEventListener('mousemove', ev_canvas, false);
+            canvas.addEventListener('mouseup', ev_canvas, false);
+        }
+
+        //@returns {tool_pencil}
+        function tool_pencil() {
+            var tool = this;
+            this.started = false;
+            //This is called when you start holding down the mouse button.
+            //This starts the pencil drawing.
+            this.mousedown = function (ev) {
+                //when you click on the canvas and drag your mouse
+                //the cursor will changes to a text-selection cursor
+                //the "ev.preventDefault()" can prevent this.
+                //ev.preventDefault();
+                context.beginPath();
+                context.moveTo(ev._x, ev._y);
+                tool.started = true;
+            };
+            //This is called every time you move the mouse.
+            //Obviously, it only draws if the tool.started state is set to true
+            this.mousemove = function (ev) {
+                if (tool.started) {
+                    context.lineTo(ev._x, ev._y);
+                    context.strokeStyle = cur_color;
+                    //橡皮用粗白笔实现，颜色为白色时调大宽度
+                    if (cur_color == "white") {
+                        context.lineWidth = 50;
+                    }
+                    else {
+                        context.lineWidth = 1;
+                    }
+                    context.stroke();
+                }
+            };
+            //This is called when you release the mouse button.
+            this.mouseup = function (ev) {
+                if (tool.started) {
+                    tool.mousemove(ev);
+                    tool.started = false;
+                }
+            };
+        }
+        //general-purpose event handler.
+        //determines the mouse position relative to the canvas element.
+        //@param ev
+        function ev_canvas(ev) {
+            var x, y;
+            if (ev.offsetX || ev.offsetY == 0) {
+                ev._x = ev.offsetX;
+                ev._y = ev.offsetY;
+            }
+
+            //传送同步消息，包括坐标、事件、颜色
+            ev_json = {
+                _x: ev._x,
+                _y: ev._y,
+                type: ev.type,
+                cur_color: cur_color
+            }
+            ev_json = JSON.stringify(ev_json)
+            websocket.send(ev_json)
+
+            //执行操作
+            var func = tool[ev.type];
+            if (func) {
+                func(ev);
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

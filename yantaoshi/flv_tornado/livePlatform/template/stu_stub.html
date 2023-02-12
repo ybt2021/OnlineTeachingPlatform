@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>模拟学生端直播界面</title>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <p style='margin:auto;text-align:center'>学生：{{sno}}，课程：{{lno}}</p>
+
+    <form method="post" action="/stu_sign">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" value="前往签到">
+    </form>
+
+</body>
+
+</html>

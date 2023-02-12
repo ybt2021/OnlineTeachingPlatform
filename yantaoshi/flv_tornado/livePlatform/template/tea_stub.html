@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>模拟教师端直播界面</title>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <p style='margin:auto;text-align:center'>教师：{{sno}}，课程：{{lno}}</p>
+    <form method="post" action="/tea_new_sign">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" value="发起签到">
+    </form>
+    <form method="post" action="/tea_check">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" value="查看签到详情">
+    </form>
+</body>
+
+</html>

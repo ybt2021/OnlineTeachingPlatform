@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>打卡详情</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    
+    <p style='margin:auto;text-align:center'>{{lno}}的打卡详情</p>
+    <p style="display:none" id="lno">{{sno}}{{lno}}</p>
+    <button class="button" id="check">点击查询</button>
+    <form method="post" action="/tea_index/">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" class="button" value="返回直播">
+    </form>
+    <form method="post" action="/tea_clear">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" class="button" value="结束签到">
+    </form>
+    <div id="info"><div>
+    
+
+    <script src="http://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.2.min.js"></script>
+    <script>
+        $('#info').append("<p>点击查询可刷新签到信息。</p>");
+        $('#info').append("<p>点击结束以结束本次签到。</p>");
+        var ws = new WebSocket("ws://127.0.0.1:8888/sign_analyse");
+        var lno = "{{lno}}";
+        
+        const check = document.getElementById("check");
+        check.addEventListener("click", do_check);
+        
+        function do_check() {
+            var sign_info = {
+                lno: lno
+            }
+            sign_info = eval(sign_info);
+            sign_info_str = JSON.stringify(sign_info);
+            ws.send(sign_info_str);
+        }
+        ws.onmessage=function(e){
+            ev = JSON.parse(e.data);
+            
+            var rate = ev.attend_rate;
+            var absent_lst = ev.absent_lst;
+            $('#info').empty();
+            $('#info').append("<p>出席率：" + rate + "%</p>");
+            $('#info').append("<p>未出席同学：" + absent_lst + "</p>");
+        }
+
+    </script>
+</body>
+
+</html>

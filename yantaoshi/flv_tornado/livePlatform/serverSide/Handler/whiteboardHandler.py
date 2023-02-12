@@ -1,0 +1,34 @@
+# import os
+from tornado.options import define, options, parse_command_line
+import tornado
+import tornado.web
+import tornado.websocket
+
+users = set()  # 所有当前用户
+
+define("port", default=8000, help="run on the given port", type=int)
+
+
+class whiteboardIndexHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('whiteboard.html')
+    def post(self):
+        self.render('whiteboard.html')
+
+
+class WhiteboardHandler(tornado.websocket.WebSocketHandler):
+    global users
+
+    def check_origin(self, origin):
+        return True
+
+    def open(self, *args, **kwargs):
+        users.add(self)
+
+    def on_message(self, message):
+        for user in users:
+            user.write_message(message)
+
+    def on_close(self) -> None:
+        users.remove(self)
+

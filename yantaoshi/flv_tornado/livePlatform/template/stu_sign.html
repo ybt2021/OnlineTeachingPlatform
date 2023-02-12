@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>请签到</title>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <p style='margin:auto;text-align:center'>{{sno}}请签到，课程为：{{lno}}</p>
+
+    <form method="post" action="/sign_process">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" value="点击签到">
+    </form>
+
+    <form method="post" action="/stu_index">
+        <input type="hidden" value="{{ sno }}" name="sno">
+        <input type="hidden" value="{{ lno }}" name="lno">
+        <input type="submit" value="返回直播">
+    </form>
+    
+</body>
+
+</html>

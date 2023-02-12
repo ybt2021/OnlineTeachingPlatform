@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <script src="{{ static_url('axios.min.js') }}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html,
+        body {
+            height: 100%
+        }
+
+        .mainContainer {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .urlInput {
+            display: block;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .centeredVideo {
+            display: block;
+            width: 100%;
+            height: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+
+        .centeredVideoMem {
+            display: none;
+            width: 100%;
+            height: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+
+        .controls {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .memberBox {
+            width: 85%;
+            border: solid;
+            height: 20%;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <div id="live" style="width:70%;height:70%;float:left">
+        <div class="mainContainer">
+            <video id="videoElement" class="centeredVideo" controls autoplay></video>
+            <iframe id="whiteboardElement" src="http://localhost:8888/whiteboardIndex"
+                style="display: none;height: 100%; width: 100%;"></iframe>
+            <iframe id="signElement" src="http://localhost:8888/tea_index/?roomid={{roomid}}&username={{username}}"
+                style="display: none;height: 100%; width: 100%;"></iframe>
+        </div>
+    </div>
+
+    <div id="chatarea"
+        style="width:25%;height:75%;border:solid;float:left;margin-left:3%;position: relative;overflow-y:auto;">
+        <p>欢迎来到直播间{{roomid}}</p>
+        <p>用户{{username}}</p>
+    </div>
+
+    <div id="chattt"
+        style="width:20%;height:75%;border:solid;float:left;margin-left:3%;position: relative;display:none">
+        <p style="text-align: center;margin-top: 1px;">课堂成员：</p>
+        <div class="memberBox">
+            <img id="TeacherAvatar" src="{{ static_url('avatar.jpg') }}"
+                style="height: 100%; width: 80%;margin-left: 10%;">
+            <video id="TeacherVideoElement" class="centeredVideoMem" controls autoplay></video>
+        </div>
+        <div class="memberBox">
+            <img id="StudentAvatar" src="{{ static_url('avatar.jpg') }}"
+                style="height: 100%; width: 80%;margin-left: 10%;">
+            <video id="StudnetVideoElement" class="centeredVideoMem" controls autoplay></video>
+        </div>
+    </div>
+
+    <div id="buttonBox" style="width: 93.5%;height: 20%;float: left;margin-top: 30px;">
+        <button id="whiteboardButton" class="button" style="margin:0 atuo ;text-align:center;">白板</button>
+        <!--<button id="closewhiteboardButton" class="button" style="margin:0 atuo ;text-align:center;">关闭白板</button>-->
+        <button id="signButton" class="button" style="margin:0 atuo ;text-align:center;">签到</button>
+        <button id="closesignButton" class="button" style="margin:0 atuo ;text-align:center;">视频界面</button>
+        <button id="shareScreenButton" class="button" style="margin:0 atuo ;text-align:center;">屏幕共享</button>
+        <button id="quitShareScreenButton" class="button" style="margin:0 atuo ;text-align:center;">结束屏幕共享</button>
+        <button id="openMicoButton" class="button" style="margin:0 atuo ;text-align:center;">打开麦克风</button>
+        <button id="closeMicoButton" class="button" style="margin:0 atuo ;text-align:center;">关闭麦克风</button>
+        <button id="openVideoButton" class="button" style="margin:0 atuo ;text-align:center;">打开视频</button>
+        <button id="closeVideoButton" class="button" style="margin:0 atuo ;text-align:center;">关闭视频</button>
+        <p class="button" id="applyreceive">此处将显示学生请求授权信息</p>
+        <br>
+        选择用户ID：<input type="text" id="target_userid" class="input">
+        <button id="permitButton" class="button" style="margin:0 atuo ;text-align:center;">授予权限</button>
+        <button id="watchScreenButton" class="button" style="margin:0 atuo ;text-align:center;">查看屏幕</button>
+        <button id="watchVideoButton" class="button" style="margin:0 atuo ;text-align:center;">查看视频</button>
+        我想@：<input type="text" id="at" class="input">
+        我想说：<input type="text" id="content" class="input">
+        <button id="sendbutton" class="button" style="margin:0 atuo ;text-align:center;">发送</button>
+    </div>
+
+    <div style="display:none">
+    
+        <div id="whiteboard" style="width:10%;height:30px;border:solid;float:left;margin-left: 10px;;margin-top:9px;">
+            
+        </div>
+
+        <div id="closewhiteboard"
+            style="width:10%;height:30px;border:solid;float:left;margin-left: 10px;;margin-top:9px;display: none;">
+            
+        </div>
+
+        <div id="sign" style="width:10%;height:30px;border:solid;float:left;margin-left: 10px;;margin-top:9px;">
+            
+        </div>
+
+        <div id="closesign"
+            style="width:10%;height:30px;border:solid;float:left;margin-left: 10px;;margin-top:9px;display: none;">
+            
+        </div>
+
+        <div id="shareScreen" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px">
+            
+        </div>
+
+        <div id="quitShareScreen"
+            style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;display: none;">
+            
+        </div>
+
+        <div id="openMico" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px">
+            
+        </div>
+
+        <div id="closeMico"
+            style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;display: none;">
+            
+        </div>
+
+        <div id="shareVideo" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px">
+            
+        </div>
+
+        <div id="quitshareVideo"
+            style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;display: none;">
+            
+        </div>
+
+        <div id="apply" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="inputUserid" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="permit" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="watchScreen" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="watchVideo" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="inputAt" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="inputMessage" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+
+        <div id="send" style="width:10%;height:30px;border:solid;float:left;margin-left:10px;margin-top:9px;">
+            
+        </div>
+    </div>
+
+
+    
+</body>
+
+<script src="{{ static_url('flv.min.js') }}"></script>
+<script src="{{ static_url('live.js') }}"></script>
+<script src="{{ static_url('qwebchannel.js') }}"></script>
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!--加载qwebchannel.js-->
+<script>
+    window.onload = function () {
+        //var userid = "{{userid}}"
+
+        try {
+            new QWebChannel(qt.webChannelTransport, function (channel) {
+                //将QWebChannel的实例挂载到window.PyHandler，后面在javascript中通过window.PyHandler即可调用
+                window.PyHandler = channel.objects.PyHandler;
+            });
+        } catch (e) {
+            window.console.log(e)
+        }
+    }
+
+</script>
+
+</html>

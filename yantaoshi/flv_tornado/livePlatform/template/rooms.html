@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择直播间</title>
+    <script src="{{ static_url('axios.min.js') }}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <style>
+        .room {
+            border: solid;
+            width: 45%;
+            margin-left: 2%;
+            float: left;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .roomholder {
+            width: 75%;
+            float: left;
+            margin-left: 2%;
+            border: solid;
+        }
+    </style>
+</head>
+
+<body style="background-color: rgb(176,196,222)">
+    <div id="profile" style="width:20%; float:left;border:solid;">
+        <p>直播间选择</p>
+        <p>欢迎您,{{username}}!</p>
+
+    </div>
+
+    <div id="rooms" class="roomholder">
+
+    </div>
+
+</body>
+
+
+<script src="{{ static_url('room.js') }}"></script>
+<script src="{{ static_url('qwebchannel.js') }}"></script>
+<!--加载qwebchannel.js-->
+<script>
+
+    $(document).ready(function () {
+        console.log("ready")
+        //----------------查询数据库动态生成直播间-------------
+        showRooms()
+        //----------------为每个room类的直播间绑定点击事件，根据点击事件，获取id---------------------
+        $(".roomholder").on("click", ".room", function (e) {
+            console.log("click1")
+            console.log(e)
+            roomid = e.currentTarget.id
+            console.log("id:" + roomid)
+            userid = getCookie("userid")
+            console.log(userid)
+            window.PyHandler.init_home(`8|${roomid}|${userid}`)
+            console.log("show tab1")
+
+        })
+    })
+
+    window.onload = function () {
+        console.log("window onload")
+        try {
+            new QWebChannel(qt.webChannelTransport, function (channel) {
+                //将QWebChannel的实例挂载到window.PyHandler，后面在javascript中通过window.PyHandler即可调用
+                window.PyHandler = channel.objects.PyHandler;
+            });
+        } catch (e) {
+            window.console.log(e)
+        }
+    }
+
+
+
+    //---------动态生成元素格子，之后应该从数据库获取元素进行渲染。先生成四个--------------------
+    function showRooms() {
+        let rooms = []
+        axios.get(
+            'http://localhost:8888/rooms',
+            {
+                params: {
+                    pageSize: 8,
+                    pageNumber: 0
+                }
+            })
+            .then(function (res) {
+                console.log(res)
+
+                rooms = (eval(res.data))
+                console.log(rooms)
+                console.log(rooms.length)
+                for (i = 0; i < rooms.length; i++) {
+                    console.log("here")
+                    let room = document.createElement("div")
+                    room.className = "room"
+                    room.innerHTML = `<p>直播间${i+1}</p>` + `<p>${(rooms[i])["title"]}</p>`
+                    room.id = rooms[i]["roomid"]
+                    console.log(room.id)
+                    console.log(room)
+                    $("#rooms").append(room)
+                }
+            })
+            .catch(function (error) {
+                console.log(error)
+            })
+
+
+    }
+    //-----------------这个函数通过传入cookie name获取对应的cookie值
+    function getCookie(name) {
+        var cookies = document.cookie;
+        var list = cookies.split("; ");     // 解析出名/值对列表
+
+        for (var i = 0; i < list.length; i++) {
+            var arr = list[i].split("=");   // 解析出名和值
+            if (arr[0] == name)
+                return decodeURIComponent(arr[1]);   // 对cookie值解码
+        }
+        return "";
+    }
+
+
+
+</script>
+
+</html>
